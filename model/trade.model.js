@@ -1,35 +1,43 @@
 const mongoose = require('mongoose');
 
-const userPortifolioSchema = mongoose.Schema({
+const tradeSchema = mongoose.Schema({
+    trade_id: {
+        type: Number,
+        defafult: 0
+    },
     ticker_symbol: {
         type: String,
-        lowercase: true,
+        uppercase: true,
         trim: true,
         required: true
     },
-    avg_buy_price: {
+    price: {
         type: Number,
         min: 10,
-        unique: true,
         required: true,
         min: 0
     },
     quantity: {
         type: Number,
         required: true,
-        unique: true,
         min: 1,
         validate: {
             validator: Number.isInteger,
             message: '{VALUE} is not an integer value'
         }
     },
+    side: {
+        type: String,
+        require: true,
+        uppercase: true,
+        trim: true,
+        enum: ["BUY", "SELL"]
+    },
     created: {
         type: Date,
         default: Date.now
     }
-}
-)
+})
 
 
-module.exports = mongoose.model('userPortfolio', userPortifolioSchema);
+module.exports = mongoose.model('trade', tradeSchema);

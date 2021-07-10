@@ -1,17 +1,13 @@
 const mongoose = require('mongoose');
 
-const userTradeSchema = mongoose.Schema({
-    trade_id: {
-        type: Number,
-        defafult: 0
-    },
+const portifolioSchema = mongoose.Schema({
     ticker_symbol: {
         type: String,
         uppercase: true,
         trim: true,
         required: true
     },
-    price: {
+    avg_price: {
         type: Number,
         min: 10,
         required: true,
@@ -26,20 +22,11 @@ const userTradeSchema = mongoose.Schema({
             message: '{VALUE} is not an integer value'
         }
     },
-    side: {
-        type: String,
-        require: true,
-        uppercase: true,
-        trim: true,
-        enum: ["BUY", "SELL"]
-    },
     created: {
         type: Date,
         default: Date.now
     }
 })
 
-userTradeSchema.static('increment')
 
-
-module.exports = mongoose.model('userTrade', userTradeSchema);
+module.exports = mongoose.model('portfolio', portifolioSchema);

@@ -7,7 +7,8 @@ const mongoose = require('mongoose');
 
 const PORT = process.env.PORT || 3001;
 
-const user = require('./routes/user');
+const trade = require('./routes/trade.routes');
+const portoflio = require('./routes/portoflio.routes');
 
 const app = express();
 app.use(express.json())
@@ -27,4 +28,5 @@ app.listen(PORT, () => {
 });
 
 
-app.use('/user',user);
+app.use('/trade', trade);
+app.use('/portoflio', portoflio);
