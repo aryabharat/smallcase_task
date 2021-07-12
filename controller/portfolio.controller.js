@@ -2,10 +2,19 @@
 const tradeService = require('../service/trade.service');
 const portfolioService = require('../service/portfolio.service');
 
+
+/**
+ * Get the current portoflio status
+ * @param {JSON} req  
+ * @param {JSON} res 
+ * 
+ * @returns array of object as  {ticker_symbol, avg_price, quantity}
+ * 
+ */
 const getPortoflio = async (req, res) => {
     try {
 
-        res.json(await portfolioService.getPortfolio());
+        res.json(await portfolioService.getPortfolio({ active_status: true }));
 
     } catch (err) {
         console.error(err)
@@ -13,13 +22,22 @@ const getPortoflio = async (req, res) => {
     }
 };
 
-// const getTrade = async (req, res) => {
-//     try {
-//         // let tradelist = 
-//         res.json(await tradeService.getTrades());
-//     } catch (err) {
-//         res.status(500).send(err)
-//     }
-// };
 
-module.exports = { getPortoflio };
+/**
+ * Calculates the current pnl for you current portfolio
+ * @param {JSON} req  
+ * @param {JSON} res 
+ * 
+ * @returns {json} { "pnl": 35952}
+ */
+const getReturns = async (req, res) => {
+    try {
+        let portfolio = await portfolioService.getPortfolio({ active_status: true })
+
+        res.json(await portfolioService.getReturs(portfolio));
+    } catch (err) {
+        res.status(500).send(err)
+    }
+};
+
+module.exports = { getPortoflio, getReturns };

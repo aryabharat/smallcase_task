@@ -2,69 +2,115 @@
 const tradeService = require('../service/trade.service');
 const portfolioService = require('../service/portfolio.service');
 
+
+
+/**
+ * Checks the trade is possible or not
+ * update the user portfolio accorgin the trade result
+ * 
+ * @param {JSON} req  
+ * @param {JSON} res 
+ * 
+ * @returns trade data  { trade_id, ticker_symbol, price, quantity, side }
+ * 
+ */
 const addNewTrade = async (req, res) => {
     try {
+        let { avg_price, quantity, status } = await tradeService.validateTrade(req.body);
 
-        // validate req data
-        // add trades trade list 
-        // add new trade data in porfolio
-        // add in validator => check the side case
+        status === "ADD" ?
+            await portfolioService.addTradeToPortfolio({ ticker_symbol: req.body.ticker_symbol, avg_price, quantity }) :
+            await portfolioService.updatePortfolio({ ticker_symbol: req.body.ticker_symbol, avg_price, quantity })
 
-        let portfolio = await portfolioService.getPortfolio({ ticker_symbol: req.body.ticker_symbol });
+        res.json(await tradeService.postTrades(req.body));
 
-
-        if (portfolio.length > 0) {
-
-            // console.log(port)
-            let avg_price = portfolio[0].avg_price
-            let current_quantity = portfolio[0].quantity
-
-            let { new_avg_price, new_qty } = tradeService.calculatePriceAndQty(avg_price, current_quantity, req.body.side, req.body.quantity, req.body.price);
-             
-            console.log({ new_avg_price, new_qty })
-            // res.json({ new_avg_price, new_qty })
-
-            let trade = await tradeService.postTrades(req.body)
-
-            let result = await portfolioService.updatePortfolio({ avg_price: new_avg_price, quantity: new_qty }, { ticker_symbol: req.body.ticker_symbol })
-
-            res.json(trade)
-            return;
-        }
-
-        if (req.body.side === "SELL") {
-            return res.status(422).json({ msg: "cannot sell a symbol you down own"})
-        }
-
-
-        let trade = await tradeService.postTrades(req.body)
-
-        let result = await portfolioService.addTradeToPortfolio({ ticker_symbol: req.body.ticker_symbol, avg_price: req.body.price, quantity: req.body.quantity })
-
-        // const newTrade = new UserTrades(req.body);
-        // await newTrade.save()
-
-        //sell
-        // cannot sell less then current qty
-        // if no asset then return false
-        // 
-        //buy
-        // cannot be less then 0
-
-        res.json(trade);
     } catch (err) {
         console.error(err)
         res.status(500).json({ error: err.message });
     }
 };
 
+
+/**
+ * returns the trade list
+ * 
+ * @param {JSON} req  
+ * @param {JSON} res 
+ * 
+ * @returns {Array} array of objects  [{ trade_id, ticker_symbol, price, quantity, side }]
+ * 
+ */
 const getTrade = async (req, res) => {
     try {
         // let tradelist = 
         res.json(await tradeService.getTrades());
     } catch (err) {
-        res.status(500).send(err)
+        console.error(err)
+        res.status(500).json({ error: err.message });
     }
 };
 
-module.exports = { getTrade, addNewTrade };
+
+/**
+ * checks if the trade can be modified and updates the trade and portfolio 
+ * 
+ * 
+ * @param {JSON} req  
+ * @param {JSON} res 
+ * 
+ * @returns  updated trade [{ trade_id, ticker_symbol, price, quantity, side }]
+ * 
+ */
+const updateTrade = async (req, res) => {
+    try {
+
+        let tradeDetails = await tradeService.getTrades({ trade_id: req.body.trade_id })
+
+        if (tradeDetails.length === 0)
+            return res.json({ msg: "invalid trade_id" })
+
+        // if updated trade is of different symbol removes check and remove the previous trade. 
+        if (tradeDetails.ticker_symbol != req.body.ticker_symbol) {
+
+            let { avg_price, quantity, status } = await tradeService.validateTrade(req.body);
+
+            await tradeService.removeTrade(tradeDetails[0]);
+
+            status === "ADD" ?
+                await portfolioService.addTradeToPortfolio({ ticker_symbol: req.body.ticker_symbol, avg_price, quantity }) :
+                await portfolioService.updatePortfolio({ ticker_symbol: req.body.ticker_symbol, avg_price, quantity })
+
+            return res.json(await tradeService.updateTradeDetails({ trade_id: req.body.trade_id }, req.body))
+        }
+        res.json(await tradeService.updateTrade(tradeDetails[0], req.body))
+
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: err.message });
+    }
+}
+
+/**
+ * Remove the trade from trade list and updates the portfolio 
+ * 
+ * @param {JSON} req  
+ * @param {JSON} res 
+ * 
+ */
+const removeTrade = async (req, res) => {
+    try {
+        let tradeDetails = await tradeService.getTrades({ trade_id: req.body.trade_id })
+
+        if (tradeDetails.length === 0)
+            return res.json({ msg: "invalid trade_id" })
+
+        await tradeService.removeTrade(tradeDetails[0]);
+        await tradeService.deleteTrade(req.body.trade_id);
+        res.json({ msg: " trade removed succesfully" });
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: err.message });
+    }
+}
+
+module.exports = { getTrade, addNewTrade, updateTrade, removeTrade };

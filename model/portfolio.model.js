@@ -9,7 +9,6 @@ const portifolioSchema = mongoose.Schema({
     },
     avg_price: {
         type: Number,
-        min: 10,
         required: true,
         min: 0
     },
@@ -21,6 +20,10 @@ const portifolioSchema = mongoose.Schema({
             validator: Number.isInteger,
             message: '{VALUE} is not an integer value'
         }
+    },
+    active_status:{
+        type: Boolean, 
+        default: true
     },
     created: {
         type: Date,

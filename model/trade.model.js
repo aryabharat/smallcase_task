@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 
+
 const tradeSchema = mongoose.Schema({
     trade_id: {
-        type: Number,
-        defafult: 0
+        type: String,
+        required: true
     },
     ticker_symbol: {
         type: String,
