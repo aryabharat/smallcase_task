@@ -17,7 +17,7 @@ const addNewTrade = async (req, res) => {
 
         status === "ADD" ?
             await portfolioService.addTradeToPortfolio({ ticker_symbol: req.body.ticker_symbol, avg_price, quantity }) :
-            await portfolioService.updatePortfolio({ ticker_symbol: req.body.ticker_symbol, avg_price, quantity })
+            await portfolioService.updatePortfolio({ avg_price, quantity }, { ticker_symbol: req.body.ticker_symbol })
 
         res.json(await tradeService.postTrades(req.body));
 
@@ -62,7 +62,8 @@ const updateTrade = async (req, res) => {
             return res.json({ msg: "invalid trade_id" })
 
         // if updated trade is of different symbol removes check and remove the previous trade. 
-        if (tradeDetails.ticker_symbol != req.body.ticker_symbol) {
+        // console.log(tradeDetails.ticker_symbol,req.body.ticker_symbol)
+        if (tradeDetails[0].ticker_symbol != req.body.ticker_symbol) {
 
             let { avg_price, quantity, status } = await tradeService.validateTrade(req.body);
 
@@ -70,10 +71,12 @@ const updateTrade = async (req, res) => {
 
             status === "ADD" ?
                 await portfolioService.addTradeToPortfolio({ ticker_symbol: req.body.ticker_symbol, avg_price, quantity }) :
-                await portfolioService.updatePortfolio({ ticker_symbol: req.body.ticker_symbol, avg_price, quantity })
+                await portfolioService.updatePortfolio({ avg_price, quantity }, { ticker_symbol: req.body.ticker_symbol })
 
             return res.json(await tradeService.updateTradeDetails({ trade_id: req.body.trade_id }, req.body))
         }
+
+        console.log(tradeDetails[0], req.body)
         res.json(await tradeService.updateTrade(tradeDetails[0], req.body))
 
     } catch (err) {

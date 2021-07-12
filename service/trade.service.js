@@ -10,7 +10,7 @@ const uuidv4 = require('uuid').v4;
  */
 const getTrades = async function (query) {
     try {
-        return await Trade.find(query).select('trade_id ticker_symbol price quantity side -_id');
+        return await Trade.find(query).sort("created").select('trade_id ticker_symbol price quantity side -_id');
     } catch (e) {
         throw Error(e)
     }
@@ -49,8 +49,9 @@ const postTrades = async function (query) {
 const updateTrade = async function (oldTradeDetails, newTradeDetails) {
     try {
 
-
         let portfolio = await Portfolio.findOne({ ticker_symbol: oldTradeDetails.ticker_symbol })
+
+        console.log(portfolio)
 
         if (newTradeDetails.side === "SELL") {
 
@@ -79,8 +80,12 @@ const updateTrade = async function (oldTradeDetails, newTradeDetails) {
 const removeTrade = async function (TradeDetails) {
     try {
 
+        console.log("in remove trade")
         console.log(TradeDetails)
+        
         let portfolio = await Portfolio.findOne({ ticker_symbol: TradeDetails.ticker_symbol })
+
+        console.log(portfolio);
 
         console.log(TradeDetails.ticker_symbol)
 
@@ -91,7 +96,7 @@ const removeTrade = async function (TradeDetails) {
             await portfolioService.updatePortfolio({ quantity: portfolio.quantity + TradeDetails.quantity }, { ticker_symbol: TradeDetails.ticker_symbol });
 
             return;
-        }
+        }        
 
         let netQty = portfolio.quantity - TradeDetails.quantity;
 
@@ -144,7 +149,6 @@ const calculatePriceAndQty = function (current_avg_price, current_quantity, side
                 new_qty: current_quantity + quantity
             }
         }
-
         return {
             new_avg_price: current_avg_price,
             new_qty: current_quantity - quantity
@@ -169,12 +173,14 @@ const validateTrade = async function (tradeDetails) {
     try {
         let portfolio = await portfolioService.getPortfolio({ ticker_symbol: tradeDetails.ticker_symbol });
 
+        console.log("in validate trade")
+        console.log(portfolio)
+
         if (portfolio.length > 0) {
 
             let { new_avg_price, new_qty } = calculatePriceAndQty(portfolio[0].avg_price, portfolio[0].quantity, tradeDetails.side, tradeDetails.quantity, tradeDetails.price);
 
             return { avg_price: new_avg_price, quantity: new_qty, status: "UPDATE" }
-
         }
 
         if (tradeDetails.side === "SELL") {
@@ -308,6 +314,8 @@ const updateBuy = async (portfolio, oldTradeDetails, newTradeDetails) => {
     try {
 
         let netQty = (portfolio.quantity - oldTradeDetails.quantity);
+
+        console.log(netQty)
 
         if (netQty === 0) {
 

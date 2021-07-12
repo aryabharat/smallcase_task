@@ -26,6 +26,8 @@ const getPortfolio = async function (filter) {
 const updatePortfolio = async function (query, filter) {
     try {
 
+        console.log({ filter, query })
+
         if (query.quantity === 0)
             return await Portfolio.findOneAndUpdate(filter, { quantity: query.quantity, active_status: false })
 
@@ -69,9 +71,9 @@ const getReturs = async function (portfolio) {
 
         let current_price = 100;
 
-        for (let i = 0; i < portfolio.length; i++) 
+        for (let i = 0; i < portfolio.length; i++)
             pnl += (current_price - portfolio[0].avg_price) * current_price;
-        
+
         return { pnl };
     } catch (err) {
         throw err;

@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 // const cors = require('cors');
 // const helmet = require('helmet')
-// const morgan = require('morgan');
+const morgan = require('morgan');
 
 const PORT = process.env.PORT || 3001;
 
@@ -14,7 +14,7 @@ const app = express();
 app.use(express.json())
 // app.use(cors());
 // app.use(helmet());
-// app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
 mongoose.connect(process.env.MONGO_URI, { useUnifiedTopology: true, useNewUrlParser: true });
 
 const connection = mongoose.connection;
