@@ -5,8 +5,6 @@ const portfolioService = require('../service/portfolio.service');
 
 /**
  * Get the current portoflio status
- * @param {JSON} req  
- * @param {JSON} res 
  * 
  * @returns array of object as  {ticker_symbol, avg_price, quantity}
  * 
@@ -18,15 +16,13 @@ const getPortoflio = async (req, res) => {
 
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: err.message });
+        res.status(400).json({ error: err.message });
     }
 };
 
 
 /**
  * Calculates the current pnl for you current portfolio
- * @param {JSON} req  
- * @param {JSON} res 
  * 
  * @returns {json} { "pnl": 35952}
  */
@@ -36,7 +32,7 @@ const getReturns = async (req, res) => {
 
         res.json(await portfolioService.getReturs(portfolio));
     } catch (err) {
-        res.status(500).send(err)
+        res.status(400).send(err)
     }
 };
 

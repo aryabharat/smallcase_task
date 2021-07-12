@@ -8,9 +8,6 @@ const portfolioService = require('../service/portfolio.service');
  * Checks the trade is possible or not
  * update the user portfolio accorgin the trade result
  * 
- * @param {JSON} req  
- * @param {JSON} res 
- * 
  * @returns trade data  { trade_id, ticker_symbol, price, quantity, side }
  * 
  */
@@ -26,7 +23,7 @@ const addNewTrade = async (req, res) => {
 
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: err.message });
+        res.status(400).json({ error: err.message });
     }
 };
 
@@ -34,8 +31,6 @@ const addNewTrade = async (req, res) => {
 /**
  * returns the trade list
  * 
- * @param {JSON} req  
- * @param {JSON} res 
  * 
  * @returns {Array} array of objects  [{ trade_id, ticker_symbol, price, quantity, side }]
  * 
@@ -46,7 +41,7 @@ const getTrade = async (req, res) => {
         res.json(await tradeService.getTrades());
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: err.message });
+        res.status(400).json({ error: err.message });
     }
 };
 
@@ -54,9 +49,6 @@ const getTrade = async (req, res) => {
 /**
  * checks if the trade can be modified and updates the trade and portfolio 
  * 
- * 
- * @param {JSON} req  
- * @param {JSON} res 
  * 
  * @returns  updated trade [{ trade_id, ticker_symbol, price, quantity, side }]
  * 
@@ -86,15 +78,13 @@ const updateTrade = async (req, res) => {
 
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: err.message });
+        res.status(400).json({ error: err.message });
     }
 }
 
 /**
  * Remove the trade from trade list and updates the portfolio 
  * 
- * @param {JSON} req  
- * @param {JSON} res 
  * 
  */
 const removeTrade = async (req, res) => {
@@ -109,7 +99,7 @@ const removeTrade = async (req, res) => {
         res.json({ msg: " trade removed succesfully" });
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: err.message });
+        res.status(400).json({ error: err.message });
     }
 }
 

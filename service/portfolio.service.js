@@ -40,7 +40,6 @@ const updatePortfolio = async function (query, filter) {
 /**
  * Adds a new trade to portfolio
  * 
- * @param {JSON} query  
  * 
  */
 
