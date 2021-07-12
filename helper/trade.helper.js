@@ -15,19 +15,20 @@ const validateTrade = async (req, res, next) => {
             return res.send({ msg: "Mandatory parameters or extra parameters sent" })
         }
 
-
-
         // convert the ticker_symbol and side to uppercase
+        if (req.body.side == null || req.body.ticker_symbol == null)
+            return res.json({ msg: "invalid side. Side must be BUY or SELL" })
+
         req.body.side = (req.body.side).trim().toUpperCase()
         req.body.ticker_symbol = (req.body.ticker_symbol).trim().toUpperCase()
 
-        if(req.body.side != "BUY" && req.body.side != "SELL" )
-            return res.json({msg: "invalid side. Side must be BUY or SELL"})
+        if (req.body.side != "BUY" && req.body.side != "SELL")
+            return res.json({ msg: "invalid side. Side must be BUY or SELL" })
 
         // check the price and quantity limit 
         let { price, quantity } = req.body;
-        if (_.isString(price) || price < 0 || price > Number.MAX_SAFE_INTEGER) {
-            return res.json({ msg: "price cannot be negative or price too large" });
+        if (_.isString(price) || price < 0 || price > Number.MAX_SAFE_INTEGER || price == null) {
+            return res.json({ msg: "invalid price" });
         }
 
         req.body.price = Number.parseFloat(price).toFixed(2);
