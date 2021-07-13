@@ -290,14 +290,8 @@ const updateSell = async (portfolio, oldTradeDetails, newTradeDetails) => {
         if (netQty < 0)
             return { msg: "cannot sell this qty" }
 
-        if (netQty === 0) {
-            return updateTradeDetails(oldTradeDetails, newTradeDetails);
-        }
+        await portfolioService.updatePortfolio({quantity: netQty},{ ticker_symbol: newTradeDetails.ticker_symbol })
 
-        await Portfolio.updateOne({ ticker_symbol: newTradeDetails.ticker_symbol },
-            {
-                quantity: netQty
-            })
         return updateTradeDetails(oldTradeDetails, newTradeDetails);
 
     } catch (err) {
