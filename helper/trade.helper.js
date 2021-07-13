@@ -22,7 +22,7 @@ const validateTrade = async (req, res, next) => {
         req.body.side = (req.body.side).trim().toUpperCase()
         req.body.ticker_symbol = (req.body.ticker_symbol).trim().toUpperCase()
 
-        if (req.body.side != "BUY" && req.body.side != "SELL")
+        if (req.body.side != process.env.TRADE_TYPE_BUY && req.body.side != process.env.TRADE_TYPE_SELL)
             return res.json({ msg: "invalid side. Side must be BUY or SELL" })
 
         // check the price and quantity limit 
