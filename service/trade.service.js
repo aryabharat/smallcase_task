@@ -49,7 +49,7 @@ const postTrades = async function (query) {
 const updateTrade = async function (oldTradeDetails, newTradeDetails) {
     try {
 
-        let portfolio = await Portfolio.findOne({ ticker_symbol: oldTradeDetails.ticker_symbol })
+        let portfolio = await Portfolio.findOne({ ticker_symbol: oldTradeDetails.ticker_symbol, active_status: true })
 
         console.log(portfolio)
 
@@ -82,8 +82,8 @@ const removeTrade = async function (TradeDetails) {
 
         console.log("in remove trade")
         console.log(TradeDetails)
-        
-        let portfolio = await Portfolio.findOne({ ticker_symbol: TradeDetails.ticker_symbol })
+
+        let portfolio = await Portfolio.findOne({ ticker_symbol: TradeDetails.ticker_symbol, active_status: true })
 
         console.log(portfolio);
 
@@ -96,7 +96,7 @@ const removeTrade = async function (TradeDetails) {
             await portfolioService.updatePortfolio({ quantity: portfolio.quantity + TradeDetails.quantity }, { ticker_symbol: TradeDetails.ticker_symbol });
 
             return;
-        }        
+        }
 
         let netQty = portfolio.quantity - TradeDetails.quantity;
 
@@ -220,17 +220,16 @@ const changeBuyToSell = async (portfolio, oldTradeDetails, newTradeDetails) => {
             return { msg: "cannot sell this qty" }
 
         if (netQty == 0) {
-            await Portfolio.findOneAndUpdate({ ticker_symbol: newTradeDetails.ticker_symbol }, { active_status: false })
+
+            await portfolioService.updatePortfolio({ quantity: netQty }, { ticker_symbol: newTradeDetails.ticker_symbol })
+
             return updateTradeDetails(oldTradeDetails, newTradeDetails);
         }
+
         let newAvgPrice = (((portfolio.avg_price * portfolio.quantity) - (oldTradeDetails.price * oldTradeDetails.quantity)) / (portfolio.quantity - oldTradeDetails.quantity))
 
-        await Portfolio.updateOne({ ticker_symbol: newTradeDetails.ticker_symbol },
-            {
-                avg_price: newAvgPrice,
-                quantity: netQty
-            }
-        )
+        await portfolioService.updatePortfolio({ avg_price: newAvgPrice, quantity: netQty }, { ticker_symbol: newTradeDetails.ticker_symbol })
+
         return updateTradeDetails(oldTradeDetails, newTradeDetails);
 
     } catch (err) {
@@ -290,14 +289,8 @@ const updateSell = async (portfolio, oldTradeDetails, newTradeDetails) => {
         if (netQty < 0)
             return { msg: "cannot sell this qty" }
 
-        if (netQty === 0) {
-            return updateTradeDetails(oldTradeDetails, newTradeDetails);
-        }
+        await portfolioService.updatePortfolio({ quantity: netQty }, { ticker_symbol: newTradeDetails.ticker_symbol })
 
-        await Portfolio.updateOne({ ticker_symbol: newTradeDetails.ticker_symbol },
-            {
-                quantity: netQty
-            })
         return updateTradeDetails(oldTradeDetails, newTradeDetails);
 
     } catch (err) {
@@ -324,21 +317,15 @@ const updateBuy = async (portfolio, oldTradeDetails, newTradeDetails) => {
 
         if (netQty === 0) {
 
-            await Portfolio.updateOne({ ticker_symbol: newTradeDetails.ticker_symbol },
-                {
-                    quantity: newTradeDetails.quantity,
-                    avg_price: newTradeDetails.price
-                })
+            await portfolioService.updatePortfolio({ quantity: newTradeDetails.quantity, avg_price: newTradeDetails.price }, { ticker_symbol: newTradeDetails.ticker_symbol })
+
             return updateTradeDetails(oldTradeDetails, newTradeDetails);
         }
 
         let newAvgPrice = (((portfolio.avg_price * portfolio.quantity) - (oldTradeDetails.price * oldTradeDetails.quantity)) / (portfolio.quantity - oldTradeDetails.quantity));
 
-        await Portfolio.updateOne({ ticker_symbol: newTradeDetails.ticker_symbol },
-            {
-                quantity: netQty + newTradeDetails.quantity,
-                avg_price: newAvgPrice
-            })
+        await portfolioService.updatePortfolio({  quantity: netQty + newTradeDetails.quantity,  avg_price: newAvgPrice }, { ticker_symbol: newTradeDetails.ticker_symbol })
+
         return updateTradeDetails(oldTradeDetails, newTradeDetails);
 
     } catch (err) {
