@@ -53,15 +53,15 @@ const updateTrade = async function (oldTradeDetails, newTradeDetails) {
 
         console.log(portfolio)
 
-        if (newTradeDetails.side === "SELL") {
+        if (newTradeDetails.side === process.env.TRADE_TYPE_SELL) {
 
-            if (oldTradeDetails.side === "BUY")
+            if (oldTradeDetails.side === process.env.TRADE_TYPE_BUY)
                 return await changeBuyToSell(portfolio, oldTradeDetails, newTradeDetails);
 
             return await updateSell(portfolio, oldTradeDetails, newTradeDetails);
         }
 
-        if (oldTradeDetails.side === "SELL")
+        if (oldTradeDetails.side === process.env.TRADE_TYPE_SELL)
             return await changeSellToBuy(portfolio, oldTradeDetails, newTradeDetails);
 
         return await updateBuy(portfolio, oldTradeDetails, newTradeDetails)
@@ -89,7 +89,7 @@ const removeTrade = async function (TradeDetails) {
 
         console.log(TradeDetails.ticker_symbol)
 
-        if (TradeDetails.side === "SELL") {
+        if (TradeDetails.side === process.env.TRADE_TYPE_SELL) {
 
             let query = { quantity: portfolio.quantity + TradeDetails.quantity }
 
@@ -100,7 +100,7 @@ const removeTrade = async function (TradeDetails) {
 
         let netQty = portfolio.quantity - TradeDetails.quantity;
 
-        let newAvgPrice = netQty === 0 ? 0 : (((portfolio.avg_price * portfolio.quantity) - (TradeDetails.price * TradeDetails.quantity)) / netQty)
+        let newAvgPrice = netQty === 0 ? portfolio.avg_price : (((portfolio.avg_price * portfolio.quantity) - (TradeDetails.price * TradeDetails.quantity)) / netQty)
 
         await portfolioService.updatePortfolio({ avg_price: newAvgPrice, quantity: netQty }, { ticker_symbol: TradeDetails.ticker_symbol })
 
@@ -140,10 +140,10 @@ const calculatePriceAndQty = function (current_avg_price, current_quantity, side
     try {
         console.log(current_avg_price, current_quantity, side, quantity, price)
 
-        if (side === "SELL" && current_quantity < quantity)
+        if (side === process.env.TRADE_TYPE_SELL && current_quantity < quantity)
             throw "cannot sell quantity more then the current quantity."
 
-        if (side === "BUY") {
+        if (side === process.env.TRADE_TYPE_BUY) {
             return {
                 new_avg_price: (((current_avg_price * current_quantity) + (price * quantity)) / (current_quantity + quantity)).toFixed(2),
                 new_qty: current_quantity + quantity
@@ -178,15 +178,20 @@ const validateTrade = async function (tradeDetails) {
 
         if (portfolio.length > 0) {
 
+
+
             let { new_avg_price, new_qty } = calculatePriceAndQty(portfolio[0].avg_price, portfolio[0].quantity, tradeDetails.side, tradeDetails.quantity, tradeDetails.price);
+
+            console.log(new_avg_price, new_qty)
+            console.log("update")
 
             return { avg_price: new_avg_price, quantity: new_qty, status: "UPDATE" }
         }
 
-        if (tradeDetails.side === "SELL") {
+        if (tradeDetails.side === process.env.TRADE_TYPE_SELL) {
             throw "cannot sell a symbol you down own"
         }
-
+        console.log("add")
         return { avg_price: tradeDetails.price, quantity: tradeDetails.quantity, status: "ADD" }
 
     } catch (err) {

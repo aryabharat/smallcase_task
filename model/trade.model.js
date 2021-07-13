@@ -10,8 +10,7 @@ const tradeSchema = mongoose.Schema({
         type: String,
         uppercase: true,
         trim: true,
-        required: true,
-        unique: true
+        required: true
     },
     price: {
         type: Number,

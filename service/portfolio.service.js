@@ -27,7 +27,7 @@ const updatePortfolio = async function (query, filter) {
     try {
 
         console.log({ filter, query })
-
+        console.log("Aaa")
         if (query.quantity === 0)
             return await Portfolio.findOneAndUpdate(filter, { quantity: query.quantity, active_status: false })
 
